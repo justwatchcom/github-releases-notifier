@@ -98,7 +98,9 @@ func (c *Checker) query(owner, name string) (Repository, error) {
 		"name":  githubql.String(name),
 	}
 
-	if err := c.client.Query(context.Background(), &query, variables); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := c.client.Query(ctx, &query, variables); err != nil {
 		return Repository{}, err
 	}
 

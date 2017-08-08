@@ -45,7 +45,7 @@ func (s *SlackSender) Send(repository Repository) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	req = req.WithContext(ctx)
 	defer cancel()
 
