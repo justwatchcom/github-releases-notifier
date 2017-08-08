@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: github-releases-notifier
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: github-releases-notifier
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+      - name: github-releases-notifier
+        image: justwatch/github-releases-notifier
+        env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-releases-notifier
+              key: github
+        - name: SLACK_HOOK
+          valueFrom:
+            secretKeyRef:
+              name: github-releases-notifier
+              key: slack
+        command:
+        - '/bin/github-releases-notifier'
+        args:
+        - '-r=golang/go'
+        - '-r=justwatchcom/elasticsearch_exporter'
+        - '-r=justwatchcom/gopass'
+        - '-r=justwatchcom/sql_exporter'
+        - '-r=kubernetes/minikube'
+        - '-r=prometheus/prometheus'
+        - '-r=shurcooL/githubql'
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 25m
+            memory: 64Mi
+      restartPolicy: Always
