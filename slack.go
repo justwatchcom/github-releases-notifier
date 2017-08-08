@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// SlackSender has the hook to send slack notifications.
 type SlackSender struct {
 	Hook string
 }
@@ -20,6 +21,7 @@ type slackPayload struct {
 	Text      string `json:"text"`
 }
 
+// Send a notification with a formatted message build from the repository.
 func (s *SlackSender) Send(repository Repository) error {
 	payload := slackPayload{
 		Username:  "GitHub Releases",
@@ -43,9 +45,9 @@ func (s *SlackSender) Send(repository Repository) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	req = req.WithContext(ctx)
 	defer cancel()
-	req.WithContext(ctx)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
