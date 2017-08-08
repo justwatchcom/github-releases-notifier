@@ -6,6 +6,12 @@
 
 Receive Slack notifications if a new release of your favorite software is available on GitHub.
 
+![screenshot.png](screenshot.png)
+
+### Watching repositories
+
+To watch repositories simply add them to the list of arguments `-r=kuberentes/kubernetes -r=prometheus/prometheus` and so on.
+
 ### Deploying
 
 1. Get a URL to send WebHooks to your Slack from https://api.slack.com/incoming-webhooks.
