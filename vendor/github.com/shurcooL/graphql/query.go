@@ -1,4 +1,4 @@
-package githubql
+package graphql
 
 import (
 	"bytes"
@@ -6,25 +6,19 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/shurcooL/githubql/internal/hacky/caseconv"
+	"github.com/shurcooL/graphql/ident"
 )
 
-// WARNING: This file contains hacky (but functional) code. It's very ugly.
-//          The goal is to eventually clean up the code here and move it elsewhere,
-//          reducing this file to non-existence. But, I'm tackling higher priorities
-//          first (such as ensuring the API design will scale and work out), and
-//          saving time by deferring this work.
-
-func constructQuery(v interface{}, variables map[string]interface{}) string {
-	query := querify(v)
+func constructQuery(qctx *queryContext, v interface{}, variables map[string]interface{}) string {
+	query := qctx.Query(v)
 	if variables != nil {
 		return "query(" + queryArguments(variables) + ")" + query
 	}
 	return query
 }
 
-func constructMutation(v interface{}, variables map[string]interface{}) string {
-	query := querify(v)
+func constructMutation(qctx *queryContext, v interface{}, variables map[string]interface{}) string {
+	query := qctx.Query(v)
 	if variables != nil {
 		return "mutation(" + queryArguments(variables) + ")" + query
 	}
@@ -64,33 +58,39 @@ func queryArguments(variables map[string]interface{}) string {
 	return s
 }
 
-// querify uses querifyType, which recursively constructs
+type queryContext struct {
+	// Scalars are Go types that map to GraphQL scalars, and therefore we don't want to expand them.
+	Scalars []reflect.Type
+}
+
+// Query uses writeQuery to recursively construct
 // a minified query string from the provided struct v.
 //
-// E.g., struct{Foo Int, Bar *Boolean} -> "{foo,bar}".
-func querify(v interface{}) string {
+// E.g., struct{Foo Int, BarBaz *Boolean} -> "{foo,barBaz}".
+func (c *queryContext) Query(v interface{}) string {
 	var buf bytes.Buffer
-	querifyType(&buf, reflect.TypeOf(v), false)
+	c.writeQuery(&buf, reflect.TypeOf(v), false)
 	return buf.String()
 }
 
-func querifyType(w io.Writer, t reflect.Type, inline bool) {
+// writeQuery writes a minified query for t to w. If inline is true,
+// the struct fields of t are inlined into parent struct.
+func (c *queryContext) writeQuery(w io.Writer, t reflect.Type, inline bool) {
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Slice:
-		querifyType(w, t.Elem(), false)
+		c.writeQuery(w, t.Elem(), false)
 	case reflect.Struct:
-		// Special handling of scalar struct types.
-		if t == dateTimeType || t == gitTimestampType || t == uriType || t == x509CertificateType {
-			return
+		// Special handling of scalar struct types. Don't expand them.
+		for _, scalar := range c.Scalars {
+			if t == scalar {
+				return
+			}
 		}
 		if !inline {
 			io.WriteString(w, "{")
 		}
-		sep := false
 		for i := 0; i < t.NumField(); i++ {
-			if !sep {
-				sep = true
-			} else {
+			if i != 0 {
 				io.WriteString(w, ",")
 			}
 			f := t.Field(i)
@@ -100,20 +100,13 @@ func querifyType(w io.Writer, t reflect.Type, inline bool) {
 				if ok {
 					io.WriteString(w, value)
 				} else {
-					io.WriteString(w, caseconv.MixedCapsToLowerCamelCase(f.Name))
+					io.WriteString(w, ident.ParseMixedCaps(f.Name).ToLowerCamelCase())
 				}
 			}
-			querifyType(w, f.Type, inlineField)
+			c.writeQuery(w, f.Type, inlineField)
 		}
 		if !inline {
 			io.WriteString(w, "}")
 		}
 	}
 }
-
-var (
-	dateTimeType        = reflect.TypeOf(DateTime{})
-	gitTimestampType    = reflect.TypeOf(GitTimestamp{})
-	uriType             = reflect.TypeOf(URI{})
-	x509CertificateType = reflect.TypeOf(X509Certificate{})
-)

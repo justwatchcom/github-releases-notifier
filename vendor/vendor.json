@@ -58,10 +58,10 @@
 			"revisionTime": "2014-02-26T03:06:59Z"
 		},
 		{
-			"checksumSHA1": "pDc4wX6YbjwcmE6h+mKsTJTLZ1Q=",
+			"checksumSHA1": "d/5DXjf5Y51HztQMibCIMDAIB6o=",
 			"path": "github.com/shurcooL/githubql",
-			"revision": "90ae6edce2778dae98524ca8c3622cc76d87a5ba",
-			"revisionTime": "2017-07-12T02:05:31Z"
+			"revision": "b3091cd0b2f573f6945eb6f15b0559c06330a1a8",
+			"revisionTime": "2017-07-25T15:22:08Z"
 		},
 		{
 			"checksumSHA1": "knI7/j/sqbh9tUh5IJ1Alrg0HN8=",
@@ -80,6 +80,24 @@
 			"path": "github.com/shurcooL/go/ctxhttp",
 			"revision": "5924e6132c2f184e262d4bc779e5745fa297d093",
 			"revisionTime": "2017-07-17T04:21:40Z"
+		},
+		{
+			"checksumSHA1": "EV7MtBnHXibWMg4clfY118168kM=",
+			"path": "github.com/shurcooL/graphql",
+			"revision": "52ce28a2c9fdfbdb3377232422c7915fa04b678a",
+			"revisionTime": "2017-07-25T16:20:00Z"
+		},
+		{
+			"checksumSHA1": "cBmux8EtRW7A/zcYHn4ABYWjA6U=",
+			"path": "github.com/shurcooL/graphql/ident",
+			"revision": "52ce28a2c9fdfbdb3377232422c7915fa04b678a",
+			"revisionTime": "2017-07-25T16:20:00Z"
+		},
+		{
+			"checksumSHA1": "lRm7JhQAe9p+ie6OIsT16O2HAQw=",
+			"path": "github.com/shurcooL/graphql/internal/jsonutil",
+			"revision": "52ce28a2c9fdfbdb3377232422c7915fa04b678a",
+			"revisionTime": "2017-07-25T16:20:00Z"
 		},
 		{
 			"checksumSHA1": "Y+HGqEkYM15ir+J93MEaHdyFy0c=",
