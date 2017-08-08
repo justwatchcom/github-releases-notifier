@@ -10,7 +10,7 @@ Receive Slack notifications if a new release of your favorite software is availa
 
 ### Watching repositories
 
-To watch repositories simply add them to the list of arguments `-r=kuberentes/kubernetes -r=prometheus/prometheus` and so on.
+To watch repositories simply add them to the list of arguments `-r=kubernetes/kubernetes -r=prometheus/prometheus` and so on.
 
 ### Deploying
 
