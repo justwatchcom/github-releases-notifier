@@ -8,14 +8,14 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/shurcooL/githubql"
+	"github.com/shurcooL/githubv4"
 )
 
-// Checker has a githubql client to run queries and also knows about
+// Checker has a githubv4 client to run queries and also knows about
 // the current repositories releases to compare against.
 type Checker struct {
 	logger   log.Logger
-	client   *githubql.Client
+	client   *githubv4.Client
 	releases map[string]Repository
 }
 
@@ -69,24 +69,24 @@ func (c *Checker) Run(interval time.Duration, repositories []string, releases ch
 }
 
 // This should be improved in the future to make batch requests for all watched repositories at once
-// TODO: https://github.com/shurcooL/githubql/issues/17
+// TODO: https://github.com/shurcooL/githubv4/issues/17
 
 func (c *Checker) query(owner, name string) (Repository, error) {
 	var query struct {
 		Repository struct {
-			ID          githubql.ID
-			Name        githubql.String
-			Description githubql.String
-			URL         githubql.URI
+			ID          githubv4.ID
+			Name        githubv4.String
+			Description githubv4.String
+			URL         githubv4.URI
 
 			Releases struct {
 				Edges []struct {
 					Node struct {
-						ID          githubql.ID
-						Name        githubql.String
-						Description githubql.String
-						URL         githubql.URI
-						PublishedAt githubql.DateTime
+						ID          githubv4.ID
+						Name        githubv4.String
+						Description githubv4.String
+						URL         githubv4.URI
+						PublishedAt githubv4.DateTime
 					}
 				}
 			} `graphql:"releases(last: 1)"`
@@ -94,8 +94,8 @@ func (c *Checker) query(owner, name string) (Repository, error) {
 	}
 
 	variables := map[string]interface{}{
-		"owner": githubql.String(owner),
-		"name":  githubql.String(name),
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(name),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

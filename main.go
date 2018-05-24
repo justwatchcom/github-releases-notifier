@@ -10,7 +10,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/joho/godotenv"
-	"github.com/shurcooL/githubql"
+	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
@@ -43,7 +43,8 @@ func main() {
 		"caller", log.Caller(5),
 	)
 
-	level.SetKey("severity")
+	// level.SetKey("severity")
+	// https://github.com/go-kit/kit/issues/503
 	switch strings.ToLower(c.LogLevel) {
 	case "debug":
 		logger = level.NewFilter(logger, level.AllowDebug())
@@ -59,7 +60,7 @@ func main() {
 	client := oauth2.NewClient(context.Background(), tokenSource)
 	checker := &Checker{
 		logger: logger,
-		client: githubql.NewClient(client),
+		client: githubv4.NewClient(client),
 	}
 
 	releases := make(chan Repository)
