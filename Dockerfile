@@ -18,5 +18,5 @@ RUN make build
 FROM alpine:3.7
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder /go/src/github.com/justwatchcom/github-releases-notifier /bin/
+COPY --from=builder /go/src/github.com/justwatchcom/github-releases-notifier/github-releases-notifier-linux-amd64 /bin/github-releases-notifier
 ENTRYPOINT [ "/bin/github-releases-notifier" ]

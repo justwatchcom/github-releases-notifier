@@ -10,10 +10,10 @@ GOLDFLAGS += -X "main.date=$(DATE)"
 GOLDFLAGS += -X "main.commit=$(SHA)"
 GOLDFLAGS += -extldflags '-static'
 
-GOOS ?= $(shell go version | cut -d' ' -f4 | cut -d'/' -f1)
-GOARCH ?= $(shell go version | cut -d' ' -f4 | cut -d'/' -f2)
+GOOS ?= $(shell $(GO) env GOOS)
+GOARCH ?= $(shell $(GO) env GOARCH)
 
-PACKAGES ?= $(shell go list ./... | grep -v /vendor/ | grep -v /tests)
+PACKAGES ?= $(shell $(GO) list ./...)
 
 TAGS ?= netgo
 
@@ -72,4 +72,4 @@ test:
 build: $(EXECUTABLE)-$(GOOS)-$(GOARCH)
 
 $(EXECUTABLE)-$(GOOS)-$(GOARCH): $(wildcard *.go)
-	$(GO) build -tags '$(TAGS)' -ldflags '-s -w $(GOLDFLAGS)' -o $(EXECUTABLE)
+	$(GO) build -v -tags '$(TAGS)' -ldflags '-s -w $(GOLDFLAGS)' -o $(EXECUTABLE)-$(GOOS)-$(GOARCH)
