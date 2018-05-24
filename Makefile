@@ -20,9 +20,12 @@ TAGS ?= netgo
 .PHONY: all
 all: clean test build
 
+.PHONY: dep
+dep:
+	dep ensure -v -vendor-only
+
 .PHONY: clean
 clean:
-	$(GO) clean -i ./...
 	find . -type f -name "coverage.out" -delete
 
 .PHONY: fmt
@@ -59,10 +62,10 @@ megacheck:
 
 .PHONY: test
 test:
-	STATUS=0;
-	for PKG in $(PACKAGES); do
-		$(GO) test -cover -coverprofile $$GOPATH/src/$$PKG/coverage.out $$PKG || STATUS=1;
-	done; 
+	STATUS=0
+	for PKG in $(PACKAGES); do \
+		$(GO) test -cover -coverprofile $$GOPATH/src/$$PKG/coverage.out $$PKG || STATUS=1; \
+	done
 	exit $$STATUS
 
 .PHONY: build
