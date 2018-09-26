@@ -12,6 +12,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubql"
 	"golang.org/x/oauth2"
+
+	"github.com/github-releases-notifier/module/model"
+	"github.com/github-releases-notifier/module/sender"
+	releasechecker "github.com/github-releases-notifier/module/checker"
 )
 
 // Config of env and args
@@ -21,6 +25,7 @@ type Config struct {
 	LogLevel     string        `arg:"env:LOG_LEVEL"`
 	Repositories []string      `arg:"-r,separate"`
 	SlackHook    string        `arg:"env:SLACK_HOOK"`
+	IsTagChecker bool 		   `arg:"env:TAG_CHECKER"`
 }
 
 // Token returns an oauth2 token or an error.
@@ -32,7 +37,7 @@ func main() {
 	_ = godotenv.Load()
 
 	c := Config{
-		Interval: time.Hour,
+		Interval: time.Second,
 		LogLevel: "info",
 	}
 	arg.MustParse(&c)
@@ -57,15 +62,15 @@ func main() {
 
 	tokenSource := oauth2.StaticTokenSource(c.Token())
 	client := oauth2.NewClient(context.Background(), tokenSource)
-	checker := &Checker{
-		logger: logger,
-		client: githubql.NewClient(client),
+	checker := &releasechecker.Checker{
+		Logger: logger,
+		Client: githubql.NewClient(client),
 	}
 
-	releases := make(chan Repository)
-	go checker.Run(c.Interval, c.Repositories, releases)
+	releases := make(chan model.Repository)
+	go checker.Run(c.Interval, c.Repositories, releases, c.IsTagChecker)
 
-	slack := SlackSender{Hook: c.SlackHook}
+	slack := sender.SlackSender{Hook: c.SlackHook}
 
 	level.Info(logger).Log("msg", "waiting for new releases")
 	for repository := range releases {
