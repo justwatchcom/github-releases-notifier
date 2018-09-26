@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-//ApiV3tagChecker Function for working with github api v3 and check if new tags are published
-func ApiV3tagChecker(owner, name string) (Repository, error) {
+//APIV3tagChecker Function for working with github api v3 and check if new tags are published
+func APIV3tagChecker(owner, name string) (Repository, error) {
 	СonnectToRedis()
 	githubToken, ok := os.LookupEnv("GITHUB_TOKEN")
 
