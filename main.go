@@ -37,7 +37,7 @@ func main() {
 	_ = godotenv.Load()
 
 	c := Config{
-		Interval: time.Second,
+		Interval: time.Hour,
 		LogLevel: "info",
 	}
 	arg.MustParse(&c)
