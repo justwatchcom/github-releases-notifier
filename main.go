@@ -12,10 +12,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubql"
 	"golang.org/x/oauth2"
-
-	"github.com/github-releases-notifier/module/model"
-	"github.com/github-releases-notifier/module/sender"
-	releasechecker "github.com/github-releases-notifier/module/checker"
 )
 
 // Config of env and args
@@ -62,15 +58,15 @@ func main() {
 
 	tokenSource := oauth2.StaticTokenSource(c.Token())
 	client := oauth2.NewClient(context.Background(), tokenSource)
-	checker := &releasechecker.Checker{
-		Logger: logger,
-		Client: githubql.NewClient(client),
+	checker := &Checker{
+		logger: logger,
+		client: githubql.NewClient(client),
 	}
 
-	releases := make(chan model.Repository)
+	releases := make(chan Repository)
 	go checker.Run(c.Interval, c.Repositories, releases, c.IsTagChecker)
 
-	slack := sender.SlackSender{Hook: c.SlackHook}
+	slack := SlackSender{Hook: c.SlackHook}
 
 	level.Info(logger).Log("msg", "waiting for new releases")
 	for repository := range releases {

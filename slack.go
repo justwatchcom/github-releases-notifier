@@ -1,4 +1,4 @@
-package sender
+package main
 
 import (
 	"bytes"
@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/github-releases-notifier/module/model"
 )
 
 // SlackSender has the hook to send slack notifications.
@@ -24,7 +22,7 @@ type slackPayload struct {
 }
 
 // Send a notification with a formatted message build from the repository.
-func (s *SlackSender) Send(repository model.Repository) error {
+func (s *SlackSender) Send(repository Repository) error {
 	payload := slackPayload{
 		Username:  "GitHub Releases",
 		IconEmoji: ":github:",

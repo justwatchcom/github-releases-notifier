@@ -1,4 +1,4 @@
-package checker
+package main
 
 import (
 	"context"
@@ -8,14 +8,11 @@ import (
 	"github.com/google/go-github/github"
 	"net/url"
 	"time"
-
-	"github.com/github-releases-notifier/module/model"
-	"github.com/github-releases-notifier/module/redis"
 )
 
-// Function for working with github api v3 and check if new tags are published
-func ApiV3tagChecker(owner, name string) (model.Repository, error) {
-	redis.СonnectToRedis()
+//APIV3tagChecker Function for working with github api v3 and check if new tags are published
+func ApiV3tagChecker(owner, name string) (Repository, error) {
+	СonnectToRedis()
 	githubToken, ok := os.LookupEnv("GITHUB_TOKEN")
 
 	if !ok {
@@ -36,7 +33,7 @@ func ApiV3tagChecker(owner, name string) (model.Repository, error) {
 	tags, _, err := client.Repositories.ListTags(ctx, owner, name, opt)
 
 	if err != nil {
-		return model.Repository{}, fmt.Errorf("cant find repo")
+		return Repository{}, fmt.Errorf("cant find repo")
 	}
 
 	var LastTag github.RepositoryTag
@@ -47,23 +44,23 @@ func ApiV3tagChecker(owner, name string) (model.Repository, error) {
 
 	repourl, err := url.ParseRequestURI(repo.GetURL())
 	if err != nil {
-		return model.Repository{}, fmt.Errorf("cant convert url")
+		return Repository{}, fmt.Errorf("cant convert url")
 	}
 
-	if redis.GetValue(name) == LastTag.GetName() {
-		return model.Repository{}, nil
+	if GetValue(name) == LastTag.GetName() {
+		return Repository{}, nil
 	}
 
-	redis.SetKey(name, LastTag.GetName())
+	SetKey(name, LastTag.GetName())
 
-	return model.Repository{
+	return Repository{
 		ID:          string(repo.GetID()),
 		Name:        string(repo.GetName()),
 		Owner:       owner,
 		Description: string(repo.GetDescription()),
 		URL:         *repourl,
 
-		Release: model.Release{
+		Release: Release{
 			ID:			 "1",
 			Name:        LastTag.GetName(),
 			Description: "It is Tag",

@@ -1,4 +1,4 @@
-package redis
+package main
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// redis Client
+//Client redis Client
 var Client *redis.Client
 
-//set key in redis
+//SetKey set key in redis
 func SetKey(key string, value string) {
 	var err error
 
@@ -21,12 +21,12 @@ func SetKey(key string, value string) {
 	check(err)
 }
 
-//get value from redis
+//GetValue get value from redis
 func GetValue(key string) string {
 	return Client.Get(key).Val()
 }
 
-//connect to redis
+//СonnectToRedis connect to redis
 func СonnectToRedis() redis.Client {
 	var host = os.Getenv("REDIS_HOST")
 	var port = os.Getenv("REDIS_PORT")
