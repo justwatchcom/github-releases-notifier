@@ -13,6 +13,7 @@ import (
 	"github.com/github-releases-notifier/module/redis"
 )
 
+// Function for working with github api v3 and check if new tags are published
 func ApiV3tagChecker(owner, name string) (model.Repository, error) {
 	redis.СonnectToRedis()
 	githubToken, ok := os.LookupEnv("GITHUB_TOKEN")
