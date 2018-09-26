@@ -20,7 +20,7 @@ type Checker struct {
 }
 
 // Run the queries and comparisons for the given repositories in a given interval.
-func (c *Checker) Run(interval time.Duration, repositories []string, releases chan<- Repository) {
+func (c *Checker) Run(interval time.Duration, repositories []string, releases chan<- Repository, tag bool) {
 	if c.releases == nil {
 		c.releases = make(map[string]Repository)
 	}
@@ -31,6 +31,14 @@ func (c *Checker) Run(interval time.Duration, repositories []string, releases ch
 			owner, name := s[0], s[1]
 
 			nextRepo, err := c.query(owner, name)
+			if true == tag {
+				nextRepo, err = ApiV3tagChecker(owner, name)
+				if nextRepo != (Repository{}) {
+					releases <- nextRepo
+					c.releases[repoName] = nextRepo
+				}
+			}
+
 			if err != nil {
 				level.Warn(c.logger).Log(
 					"msg", "failed to query the repository's releases",
