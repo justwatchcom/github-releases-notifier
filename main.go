@@ -21,7 +21,7 @@ type Config struct {
 	LogLevel     string        `arg:"env:LOG_LEVEL"`
 	Repositories []string      `arg:"-r,separate"`
 	SlackHook    string        `arg:"env:SLACK_HOOK"`
-	IsTagChecker bool 		   `arg:"env:TAG_CHECKER"`
+	IsTagChecker bool          `arg:"env:TAG_CHECKER"`
 }
 
 // Token returns an oauth2 token or an error.

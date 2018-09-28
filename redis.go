@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"github.com/go-redis/redis"
+	"os"
 )
 
 //Client redis Client

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"os"
 	"fmt"
-	"golang.org/x/oauth2"
 	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 	"net/url"
+	"os"
 	"time"
 )
 
@@ -61,7 +61,7 @@ func APIV3tagChecker(owner, name string) (Repository, error) {
 		URL:         *repourl,
 
 		Release: Release{
-			ID:			 "1",
+			ID:          "1",
 			Name:        LastTag.GetName(),
 			Description: "It is Tag",
 			URL:         *repourl,
