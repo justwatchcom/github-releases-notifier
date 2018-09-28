@@ -32,7 +32,7 @@ func (c *Checker) Run(interval time.Duration, repositories []string, releases ch
 
 			nextRepo, err := c.query(owner, name)
 			if true == tag {
-				nextRepo, err = ApiV3tagChecker(owner, name)
+				nextRepo, err = APIV3tagChecker(owner, name)
 				if nextRepo != (Repository{}) {
 					releases <- nextRepo
 					c.releases[repoName] = nextRepo
