@@ -9,7 +9,7 @@
 //
 // It is meant to be used by the go-github authors in conjunction with the
 // go generate tool before sending a commit to GitHub.
-package github
+package main
 
 import (
 	"bytes"
