@@ -8,7 +8,7 @@ services:
 
 before_install:
   - go get -v github.com/golang/lint/golint
-  - curl -sL http://git.io/goreleaser | bash
+  - curl -sL http://git.io/goreleaser | bash -s -- -v
 
 script:
   - make clean
