@@ -9,6 +9,7 @@ services:
 before_install:
   - go get -v github.com/golang/lint/golint
   - curl -sL http://git.io/goreleaser | bash -s -- -v
+  - mv "${TMPDIR}/goreleaser" /go/bin/
 
 script:
   - make clean
