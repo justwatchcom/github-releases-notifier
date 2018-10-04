@@ -13,6 +13,7 @@ before_install:
   - cd $GOPATH/src/github.com/goreleaser/goreleaser
   - dep ensure -vendor-only
   - make setup build
+  - cd -
 
 script:
   - make clean
