@@ -3,6 +3,9 @@ language: go
 go:
   - 1.10.x
 
+services:
+  - docker
+
 before_install:
   - go get -v github.com/golang/lint/golint
   - curl -sL http://git.io/goreleaser | bash
