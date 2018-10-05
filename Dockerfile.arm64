@@ -1,15 +1,6 @@
-FROM golang:1.9 as builder
-
-ADD . /go/src/github.com/justwatchcom/github-releases-notifier
-WORKDIR /go/src/github.com/justwatchcom/github-releases-notifier
-
-RUN make buildarm
-
 FROM arm64v8/alpine:3.7
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder \
-  /go/src/github.com/justwatchcom/github-releases-notifier/github-releases-notifier \
-  /bin/github-releases-notifier
+COPY dist/linux_arm64/github-releases-notifier /bin/
 
 ENTRYPOINT [ "/bin/github-releases-notifier" ]
