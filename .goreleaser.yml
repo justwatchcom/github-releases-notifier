@@ -46,18 +46,18 @@ dockers:
   goos: linux
   goarch: amd64
   goarm: ''
-  binary: propaganda
+  binary: github-releases-notifier
   dockerfile: Dockerfile.amd64
 - image: justwatchcom/github-releases-notifier-armv6
   goos: linux
   goarch: arm
   goarm: '6'
-  binary: propaganda
+  binary: github-releases-notifier
   dockerfile: Dockerfile.armv6
 - image: justwatchcom/github-releases-notifier-arm64
   goos: linux
   goarch: arm64
-  binary: propaganda
+  binary: github-releases-notifier
   dockerfile: Dockerfile.arm64
 env_files:
   github_token: ~/.goreleaser.token
