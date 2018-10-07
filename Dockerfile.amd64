@@ -1,0 +1,5 @@
+FROM alpine:3.6
+RUN apk --no-cache add ca-certificates
+
+COPY dist/linux_amd64/github-releases-notifier /bin/
+ENTRYPOINT [ "/bin/github-releases-notifier" ]

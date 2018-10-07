@@ -1,10 +1,20 @@
 language: go
 
 go:
-  - 1.8.x
+  - 1.10.x
+
+services:
+  - docker
 
 before_install:
+  - go get -u github.com/golang/dep/cmd/dep
   - go get -v github.com/golang/lint/golint
+  - go get -d github.com/goreleaser/goreleaser
+  - cd $GOPATH/src/github.com/goreleaser/goreleaser
+  - dep ensure -vendor-only
+  - make setup build
+  - go install
+  - cd -
 
 script:
   - make clean

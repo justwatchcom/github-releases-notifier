@@ -1,0 +1,6 @@
+FROM arm32v6/alpine:3.7
+RUN apk --no-cache add ca-certificates
+
+COPY dist/linux_arm_6/github-releases-notifier /bin/
+
+ENTRYPOINT [ "/bin/github-releases-notifier" ]
