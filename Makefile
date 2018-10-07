@@ -52,7 +52,11 @@ test:
 	STATUS=0; for PKG in $(PACKAGES); do go test -cover -coverprofile $$GOPATH/src/$$PKG/coverage.out $$PKG || STATUS=1; done; exit $$STATUS
 
 .PHONY: build
-build: 
+build:
+	go build
+
+.PHONY: snapshot
+snapshot: 
 	goreleaser --snapshot --rm-dist
 
 .PHONY: release
