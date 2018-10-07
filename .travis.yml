@@ -18,4 +18,7 @@ before_install:
 
 script:
   - make clean
-  - make tests
+  - make vet
+  - make lint
+  - make test
+  - make build
