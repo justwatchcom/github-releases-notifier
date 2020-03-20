@@ -1,5 +1,6 @@
 [![GoDoc](https://godoc.org/github.com/alexflint/go-arg?status.svg)](https://godoc.org/github.com/alexflint/go-arg)
 [![Build Status](https://travis-ci.org/alexflint/go-arg.svg?branch=master)](https://travis-ci.org/alexflint/go-arg)
+[![GolangCI](https://golangci.com/badges/github.com/alexflint/go-arg.svg)](https://golangci.com/r/github.com/alexflint/go-arg)
 [![Coverage Status](https://coveralls.io/repos/alexflint/go-arg/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexflint/go-arg?branch=master)
 [![Report Card](https://goreportcard.com/badge/github.com/alexflint/go-arg)](https://goreportcard.com/badge/github.com/alexflint/go-arg)
 
@@ -9,7 +10,7 @@
 go get github.com/alexflint/go-arg
 ```
 
-Declare the command line arguments your program accepts by defining a struct.
+Declare command line arguments for your program by defining a struct.
 
 ```go
 var args struct {
@@ -94,14 +95,29 @@ $ NUM_WORKERS=4 ./example
 Workers: 4
 ```
 
+You can provide multiple values using the CSV (RFC 4180) format:
+
+```go
+var args struct {
+    Workers []int `arg:"env"`
+}
+arg.MustParse(&args)
+fmt.Println("Workers:", args.Workers)
+```
+
+```
+$ WORKERS='1,99' ./example
+Workers: [1 99]
+```
+
 ### Usage strings
 ```go
 var args struct {
 	Input    string   `arg:"positional"`
 	Output   []string `arg:"positional"`
-	Verbose  bool     `arg:"-v,help:verbosity level"`
-	Dataset  string   `arg:"help:dataset to use"`
-	Optimize int      `arg:"-O,help:optimization level"`
+	Verbose  bool     `arg:"-v" help:"verbosity level"`
+	Dataset  string   `help:"dataset to use"`
+	Optimize int      `arg:"-O" help:"optimization level"`
 }
 arg.MustParse(&args)
 ```
@@ -126,10 +142,20 @@ Options:
 
 ```go
 var args struct {
+	Foo string `default:"abc"`
+	Bar bool
+}
+arg.MustParse(&args)
+```
+
+### Default values (before v1.2)
+
+```go
+var args struct {
 	Foo string
 	Bar bool
 }
-args.Foo = "default value"
+arg.Foo = "abc"
 arg.MustParse(&args)
 ```
 
@@ -172,14 +198,14 @@ var args struct {
 }
 p := arg.MustParse(&args)
 if args.Foo == "" && args.Bar == "" {
-	p.Fail("you must provide one of --foo and --bar")
+	p.Fail("you must provide either --foo or --bar")
 }
 ```
 
 ```shell
 ./example
 Usage: samples [--foo FOO] [--bar BAR]
-error: you must provide one of --foo and --bar
+error: you must provide either --foo or --bar
 ```
 
 ### Version strings
@@ -234,18 +260,9 @@ As usual, any field tagged with `arg:"-"` is ignored.
 
 ### Custom parsing
 
-You can implement your own argument parser by implementing `encoding.TextUnmarshaler`:
+Implement `encoding.TextUnmarshaler` to define your own parsing logic.
 
 ```go
-package main
-
-import (
-	"fmt"
-	"strings"
-
-	"github.com/alexflint/go-arg"
-)
-
 // Accepts command line arguments of the form "head.tail"
 type NameDotName struct {
 	Head, Tail string
@@ -264,7 +281,7 @@ func (n *NameDotName) UnmarshalText(b []byte) error {
 
 func main() {
 	var args struct {
-		Name *NameDotName
+		Name NameDotName
 	}
 	arg.MustParse(&args)
 	fmt.Printf("%#v\n", args.Name)
@@ -272,11 +289,78 @@ func main() {
 ```
 ```shell
 $ ./example --name=foo.bar
-&main.NameDotName{Head:"foo", Tail:"bar"}
+main.NameDotName{Head:"foo", Tail:"bar"}
 
 $ ./example --name=oops
 Usage: example [--name NAME]
 error: error processing --name: missing period in "oops"
+```
+
+### Custom parsing with default values
+
+Implement `encoding.TextMarshaler` to define your own default value strings:
+
+```go
+// Accepts command line arguments of the form "head.tail"
+type NameDotName struct {
+	Head, Tail string
+}
+
+func (n *NameDotName) UnmarshalText(b []byte) error {
+	// same as previous example
+}
+
+// this is only needed if you want to display a default value in the usage string
+func (n *NameDotName) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%s.%s", n.Head, n.Tail)), nil
+}
+
+func main() {
+	var args struct {
+		Name NameDotName `default:"file.txt"`
+	}
+	arg.MustParse(&args)
+	fmt.Printf("%#v\n", args.Name)
+}
+```
+```shell
+$ ./example --help
+Usage: test [--name NAME]
+
+Options:
+  --name NAME [default: file.txt]
+  --help, -h             display this help and exit
+
+$ ./example
+main.NameDotName{Head:"file", Tail:"txt"}
+```
+
+### Custom placeholders
+
+Use the `placeholder` tag to control which placeholder text is used in the usage text.
+
+```go
+var args struct {
+	Input    string   `arg:"positional" placeholder:"SRC"`
+	Output   []string `arg:"positional" placeholder:"DST"`
+	Optimize int      `arg:"-O" help:"optimization level" placeholder:"LEVEL"`
+	MaxJobs  int      `arg:"-j" help:"maximum number of simultaneous jobs" placeholder:"N"`
+}
+arg.MustParse(&args)
+```
+```shell
+$ ./example -h
+Usage: example [--optimize LEVEL] [--maxjobs N] SRC [DST [DST ...]]
+
+Positional arguments:
+  SRC
+  DST
+
+Options:
+  --optimize LEVEL, -O LEVEL
+                         optimization level
+  --maxjobs N, -j N      maximum number of simultaneous jobs
+  --help, -h             display this help and exit
 ```
 
 ### Description strings
@@ -306,7 +390,71 @@ Options:
   --help, -h             display this help and exit
 ```
 
-### Documentation
+### Subcommands
+
+*Introduced in `v1.1.0`*
+
+Subcommands are commonly used in tools that wish to group multiple functions into a single program. An example is the `git` tool:
+```shell
+$ git checkout [arguments specific to checking out code]
+$ git commit [arguments specific to committing]
+$ git push [arguments specific to pushing]
+```
+
+The strings "checkout", "commit", and "push" are different from simple positional arguments because the options available to the user change depending on which subcommand they choose.
+
+This can be implemented with `go-arg` as follows:
+
+```go
+type CheckoutCmd struct {
+	Branch string `arg:"positional"`
+	Track  bool   `arg:"-t"`
+}
+type CommitCmd struct {
+	All     bool   `arg:"-a"`
+	Message string `arg:"-m"`
+}
+type PushCmd struct {
+	Remote      string `arg:"positional"`
+	Branch      string `arg:"positional"`
+	SetUpstream bool   `arg:"-u"`
+}
+var args struct {
+	Checkout *CheckoutCmd `arg:"subcommand:checkout"`
+	Commit   *CommitCmd   `arg:"subcommand:commit"`
+	Push     *PushCmd     `arg:"subcommand:push"`
+	Quiet    bool         `arg:"-q"` // this flag is global to all subcommands
+}
+
+arg.MustParse(&args)
+
+switch {
+case args.Checkout != nil:
+	fmt.Printf("checkout requested for branch %s\n", args.Checkout.Branch)
+case args.Commit != nil:
+	fmt.Printf("commit requested with message \"%s\"\n", args.Commit.Message)
+case args.Push != nil:
+	fmt.Printf("push requested from %s to %s\n", args.Push.Branch, args.Push.Remote)
+}
+```
+
+Some additional rules apply when working with subcommands:
+* The `subcommand` tag can only be used with fields that are pointers to structs
+* Any struct that contains a subcommand must not contain any positionals
+
+This package allows to have a program that accepts subcommands, but also does something else
+when no subcommands are specified.
+If on the other hand you want the program to terminate when no subcommands are specified,
+the recommended way is:
+
+```go
+p := arg.MustParse(&args)
+if p.Subcommand() == nil {
+    p.Fail("missing subcommand")
+}
+```
+
+### API Documentation
 
 https://godoc.org/github.com/alexflint/go-arg
 
@@ -314,8 +462,12 @@ https://godoc.org/github.com/alexflint/go-arg
 
 There are many command line argument parsing libraries for Go, including one in the standard library, so why build another?
 
-The shortcomings of the `flag` library that ships in the standard library are well known. Positional arguments must preceed options, so `./prog x --foo=1` does what you expect but `./prog --foo=1 x` does not. Arguments cannot have both long (`--foo`) and short (`-f`) forms.
+The `flag` library that ships in the standard library seems awkward to me. Positional arguments must preceed options, so `./prog x --foo=1` does what you expect but `./prog --foo=1 x` does not. It also does not allow arguments to have both long (`--foo`) and short (`-f`) forms.
 
-Many third-party argument parsing libraries are geared for writing sophisticated command line interfaces. The excellent `codegangsta/cli` is perfect for working with multiple sub-commands and nested flags, but is probably overkill for a simple script with a handful of flags.
+Many third-party argument parsing libraries are great for writing sophisticated command line interfaces, but feel to me like overkill for a simple script with a few flags.
 
-The main idea behind `go-arg` is that Go already has an excellent way to describe data structures using Go structs, so there is no need to develop more levels of abstraction on top of this. Instead of one API to specify which arguments your program accepts, and then another API to get the values of those arguments, why not replace both with a single struct?
+The idea behind `go-arg` is that Go already has an excellent way to describe data structures using structs, so there is no need to develop additional levels of abstraction. Instead of one API to specify which arguments your program accepts, and then another API to get the values of those arguments, `go-arg` replaces both with a single struct.
+
+### Backward compatibility notes
+
+Earlier versions of this library required the help text to be part of the `arg` tag. This is still supported but is now deprecated. Instead, you should use a separate `help` tag, described above, which removes most of the limits on the text you can write. In particular, you will need to use the new `help` tag if your help text includes any commas.
