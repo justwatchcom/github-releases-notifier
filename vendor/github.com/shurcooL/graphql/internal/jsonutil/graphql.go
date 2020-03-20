@@ -102,7 +102,7 @@ func (d *decoder) decode() error {
 				d.vs[i] = append(d.vs[i], f)
 			}
 			if !someFieldExist {
-				return fmt.Errorf("struct field for %s doesn't exist in any of %v places", key, len(d.vs))
+				return fmt.Errorf("struct field for %q doesn't exist in any of %v places to unmarshal", key, len(d.vs))
 			}
 
 			// We've just consumed the current token, which was the key.
@@ -116,23 +116,29 @@ func (d *decoder) decode() error {
 
 		// Are we inside an array and seeing next value (rather than end of array)?
 		case d.state() == '[' && tok != json.Delim(']'):
+			someSliceExist := false
 			for i := range d.vs {
 				v := d.vs[i][len(d.vs[i])-1]
 				if v.Kind() == reflect.Ptr {
 					v = v.Elem()
 				}
-				if v.Kind() != reflect.Slice {
-					return fmt.Errorf("can't decode into non-slice %v", v.Kind())
+				var f reflect.Value
+				if v.Kind() == reflect.Slice {
+					v.Set(reflect.Append(v, reflect.Zero(v.Type().Elem()))) // v = append(v, T).
+					f = v.Index(v.Len() - 1)
+					someSliceExist = true
 				}
-				v.Set(reflect.Append(v, reflect.Zero(v.Type().Elem()))) // v = append(v, T).
-				d.vs[i] = append(d.vs[i], v.Index(v.Len()-1))
+				d.vs[i] = append(d.vs[i], f)
+			}
+			if !someSliceExist {
+				return fmt.Errorf("slice doesn't exist in any of %v places to unmarshal", len(d.vs))
 			}
 		}
 
 		switch tok := tok.(type) {
-
-		// Values.
 		case string, json.Number, bool, nil:
+			// Value.
+
 			for i := range d.vs {
 				v := d.vs[i][len(d.vs[i])-1]
 				if !v.IsValid() {
@@ -145,10 +151,11 @@ func (d *decoder) decode() error {
 			}
 			d.popAllVs()
 
-		// Start/end of object/array.
 		case json.Delim:
 			switch tok {
 			case '{':
+				// Start of object.
+
 				d.pushState(tok)
 
 				frontier := make([]reflect.Value, len(d.vs)) // Places to look for GraphQL fragments/embedded structs.
@@ -165,10 +172,9 @@ func (d *decoder) decode() error {
 				for len(frontier) > 0 {
 					v := frontier[0]
 					frontier = frontier[1:]
-					// TODO: Needed? Add a test case if so.
-					//if v.Kind() == reflect.Ptr {
-					//	v = v.Elem()
-					//}
+					if v.Kind() == reflect.Ptr {
+						v = v.Elem()
+					}
 					if v.Kind() != reflect.Struct {
 						continue
 					}
@@ -181,6 +187,8 @@ func (d *decoder) decode() error {
 					}
 				}
 			case '[':
+				// Start of array.
+
 				d.pushState(tok)
 
 				for i := range d.vs {
@@ -197,9 +205,10 @@ func (d *decoder) decode() error {
 					if v.Kind() != reflect.Slice {
 						continue
 					}
-					v.Set(reflect.Zero(v.Type())) // v = zero(v).
+					v.Set(reflect.MakeSlice(v.Type(), 0, 0)) // v = make(T, 0, 0).
 				}
 			case '}', ']':
+				// End of object or array.
 				d.popAllVs()
 				d.popState()
 			default:
@@ -243,10 +252,14 @@ func (d *decoder) popAllVs() {
 	d.vs = nonEmpty
 }
 
-// fieldByGraphQLName returns a struct field of struct v that matches GraphQL name,
-// or invalid reflect.Value if none found.
+// fieldByGraphQLName returns an exported struct field of struct v
+// that matches GraphQL name, or invalid reflect.Value if none found.
 func fieldByGraphQLName(v reflect.Value, name string) reflect.Value {
 	for i := 0; i < v.NumField(); i++ {
+		if v.Type().Field(i).PkgPath != "" {
+			// Skip unexported field.
+			continue
+		}
 		if hasGraphQLName(v.Type().Field(i), name) {
 			return v.Field(i)
 		}
@@ -287,13 +300,12 @@ func isGraphQLFragment(f reflect.StructField) bool {
 }
 
 // unmarshalValue unmarshals JSON value into v.
+// v must be addressable and not obtained by the use of unexported
+// struct fields, otherwise unmarshalValue will panic.
 func unmarshalValue(value json.Token, v reflect.Value) error {
 	b, err := json.Marshal(value) // TODO: Short-circuit (if profiling says it's worth it).
 	if err != nil {
 		return err
-	}
-	if !v.CanAddr() {
-		return fmt.Errorf("value %v is not addressable", v)
 	}
 	return json.Unmarshal(b, v.Addr().Interface())
 }

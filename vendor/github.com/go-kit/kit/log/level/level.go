@@ -163,11 +163,6 @@ type Value interface {
 // package.
 func Key() interface{} { return key }
 
-// SetKey sets the unique key added to log events by the loggers in this
-// package. This is useful for situations where log aggregation
-// uses e.g. severity and not level.
-func SetKey(k interface{}) { key = k }
-
 // ErrorValue returns the unique value added to log events by Error.
 func ErrorValue() Value { return errorValue }
 
@@ -181,8 +176,8 @@ func InfoValue() Value { return infoValue }
 func DebugValue() Value { return debugValue }
 
 var (
-	// key is of type interfae{} so that it allocates once during package
-	// initialization and avoids allocating every type the value is added to a
+	// key is of type interface{} so that it allocates once during package
+	// initialization and avoids allocating every time the value is added to a
 	// []interface{} later.
 	key interface{} = "level"
 
