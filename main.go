@@ -55,6 +55,11 @@ func main() {
 		logger = level.NewFilter(logger, level.AllowInfo())
 	}
 
+	if len(c.Repositories) == 0 {
+		level.Error(logger).Log("msg", "no repositories wo watch")
+		os.Exit(1)
+	}
+
 	tokenSource := oauth2.StaticTokenSource(c.Token())
 	client := oauth2.NewClient(context.Background(), tokenSource)
 	checker := &Checker{
