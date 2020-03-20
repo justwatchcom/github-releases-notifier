@@ -10,7 +10,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"github.com/joho/godotenv"
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubql"
 	"golang.org/x/oauth2"
 )
 

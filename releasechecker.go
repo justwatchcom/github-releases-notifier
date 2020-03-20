@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"github.com/shurcooL/githubql"
+	githubql "github.com/shurcooL/githubql"
 )
 
 // Checker has a githubql client to run queries and also knows about
