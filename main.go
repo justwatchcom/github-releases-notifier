@@ -16,11 +16,12 @@ import (
 
 // Config of env and args
 type Config struct {
-	GithubToken  string        `arg:"env:GITHUB_TOKEN"`
-	Interval     time.Duration `arg:"env:INTERVAL"`
-	LogLevel     string        `arg:"env:LOG_LEVEL"`
-	Repositories []string      `arg:"-r,separate"`
-	SlackHook    string        `arg:"env:SLACK_HOOK"`
+	GithubToken     string        `arg:"env:GITHUB_TOKEN"`
+	Interval        time.Duration `arg:"env:INTERVAL"`
+	LogLevel        string        `arg:"env:LOG_LEVEL"`
+	Repositories    []string      `arg:"-r,separate"`
+	SlackHook       string        `arg:"env:SLACK_HOOK"`
+	IgnoreNonstable bool          `arg:"env:IGNORE_NONSTABLE"`
 }
 
 // Token returns an oauth2 token or an error.
@@ -43,7 +44,7 @@ func main() {
 		"caller", log.Caller(5),
 	)
 
-	level.SetKey("severity")
+	// level.SetKey("severity")
 	switch strings.ToLower(c.LogLevel) {
 	case "debug":
 		logger = level.NewFilter(logger, level.AllowDebug())
@@ -67,6 +68,7 @@ func main() {
 		client: githubql.NewClient(client),
 	}
 
+	// TODO: releases := make(chan Repository, len(c.Repositories))
 	releases := make(chan Repository)
 	go checker.Run(c.Interval, c.Repositories, releases)
 
@@ -74,6 +76,10 @@ func main() {
 
 	level.Info(logger).Log("msg", "waiting for new releases")
 	for repository := range releases {
+		if c.IgnoreNonstable && repository.Release.IsNonstable() {
+			level.Debug(logger).Log("msg", "not notifying about non-stable version", "version", repository.Release.Name)
+			continue
+		}
 		if err := slack.Send(repository); err != nil {
 			level.Warn(logger).Log(
 				"msg", "failed to send release to messenger",
