@@ -17,6 +17,10 @@ import (
 // Config of env and args
 type Config struct {
 	GithubToken     string        `arg:"env:GITHUB_TOKEN"`
+	GitlabAPIToken  string        `arg:"env:GITLAB_API_TOKEN"`
+	GitlabHostname  string        `arg:"env:GITLAB_HOSTNAME"`
+	GitlabProjectID int           `arg:"env:GITLAB_PROJECT_ID"`
+	GitlabLabels    string        `arg:"env:GITLAB_LABELS"`
 	Interval        time.Duration `arg:"env:INTERVAL"`
 	LogLevel        string        `arg:"env:LOG_LEVEL"`
 	Repositories    []string      `arg:"-r,separate"`
@@ -73,6 +77,13 @@ func main() {
 	go checker.Run(c.Interval, c.Repositories, releases)
 
 	slack := SlackSender{Hook: c.SlackHook}
+	gitlab := GitlabSender{
+		Hostname:  c.GitlabHostname,
+		APIToken:  c.GitlabAPIToken,
+		ProjectID: c.GitlabProjectID,
+		Labels:    c.GitlabLabels,
+		logger:    logger,
+	}
 
 	level.Info(logger).Log("msg", "waiting for new releases")
 	for repository := range releases {
@@ -80,12 +91,23 @@ func main() {
 			level.Debug(logger).Log("msg", "not notifying about non-stable version", "version", repository.Release.Name)
 			continue
 		}
-		if err := slack.Send(repository); err != nil {
-			level.Warn(logger).Log(
-				"msg", "failed to send release to messenger",
-				"err", err,
-			)
-			continue
+		if c.SlackHook != "" {
+			if err := slack.Send(repository); err != nil {
+				level.Warn(logger).Log(
+					"msg", "failed to send release to messenger",
+					"err", err,
+				)
+				continue
+			}
+		}
+		if c.GitlabAPIToken != "" && c.GitlabHostname != "" && c.GitlabProjectID > 0 {
+			if err := gitlab.Send(repository); err != nil {
+				level.Warn(logger).Log(
+					"msg", "failed to send release to messenger",
+					"err", err,
+				)
+				continue
+			}
 		}
 	}
 }
