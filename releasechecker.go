@@ -6,16 +6,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
-	githubql "github.com/shurcooL/githubql"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+
+	"github.com/shurcooL/githubv4"
 )
 
 // Checker has a githubql client to run queries and also knows about
 // the current repositories releases to compare against.
 type Checker struct {
 	logger   log.Logger
-	client   *githubql.Client
+	client   *githubv4.Client
 	releases map[string]Repository
 }
 
@@ -74,28 +75,28 @@ func (c *Checker) Run(interval time.Duration, repositories []string, releases ch
 func (c *Checker) query(owner, name string) (Repository, error) {
 	var query struct {
 		Repository struct {
-			ID          githubql.ID
-			Name        githubql.String
-			Description githubql.String
-			URL         githubql.URI
+			ID          githubv4.ID
+			Name        githubv4.String
+			Description githubv4.String
+			URL         githubv4.URI
 
 			Releases struct {
 				Edges []struct {
 					Node struct {
-						ID          githubql.ID
-						Name        githubql.String
-						Description githubql.String
-						URL         githubql.URI
-						PublishedAt githubql.DateTime
+						ID          githubv4.ID
+						Name        githubv4.String
+						Description githubv4.String
+						URL         githubv4.URI
+						PublishedAt githubv4.DateTime
 					}
 				}
-			} `graphql:"releases(last: 1)"`
+			} `graphql:"releases(last: 1, orderBy: { field: CREATED_AT, direction: ASC})"`
 		} `graphql:"repository(owner: $owner, name: $name)"`
 	}
 
 	variables := map[string]interface{}{
-		"owner": githubql.String(owner),
-		"name":  githubql.String(name),
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(name),
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

@@ -1,14 +1,18 @@
-[![GoDoc](https://godoc.org/github.com/alexflint/go-arg?status.svg)](https://godoc.org/github.com/alexflint/go-arg)
-[![Build Status](https://travis-ci.org/alexflint/go-arg.svg?branch=master)](https://travis-ci.org/alexflint/go-arg)
-[![GolangCI](https://golangci.com/badges/github.com/alexflint/go-arg.svg)](https://golangci.com/r/github.com/alexflint/go-arg)
-[![Coverage Status](https://coveralls.io/repos/alexflint/go-arg/badge.svg?branch=master&service=github)](https://coveralls.io/github/alexflint/go-arg?branch=master)
-[![Report Card](https://goreportcard.com/badge/github.com/alexflint/go-arg)](https://goreportcard.com/badge/github.com/alexflint/go-arg)
-
-## Structured argument parsing for Go
-
-```shell
-go get github.com/alexflint/go-arg
-```
+<h1 align="center">
+  <img src="./.github/banner.jpg" alt="go-arg" height="250px">
+  <br>
+  go-arg
+  </br>
+</h1>
+<h4 align="center">Struct-based argument parsing for Go</h4>
+<p align="center">
+  <a href="https://sourcegraph.com/github.com/alexflint/go-arg?badge"><img src="https://sourcegraph.com/github.com/alexflint/go-arg/-/badge.svg" alt="Sourcegraph"></a>
+  <a href="https://pkg.go.dev/github.com/alexflint/go-arg"><img src="https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square" alt="Documentation"></a>
+  <a href="https://github.com/alexflint/go-arg/actions"><img src="https://github.com/alexflint/go-arg/workflows/Go/badge.svg" alt="Build Status"></a>
+  <a href="https://codecov.io/gh/alexflint/go-arg"><img src="https://codecov.io/gh/alexflint/go-arg/branch/master/graph/badge.svg" alt="Coverage Status"></a>
+  <a href="https://goreportcard.com/report/github.com/alexflint/go-arg"><img src="https://goreportcard.com/badge/github.com/alexflint/go-arg" alt="Go Report Card"></a>
+</p>
+<br>
 
 Declare command line arguments for your program by defining a struct.
 
@@ -24,6 +28,12 @@ fmt.Println(args.Foo, args.Bar)
 ```shell
 $ ./example --foo=hello --bar
 hello true
+```
+
+### Installation
+
+```shell
+go get github.com/alexflint/go-arg
 ```
 
 ### Required arguments
@@ -115,7 +125,7 @@ Workers: [1 99]
 var args struct {
 	Input    string   `arg:"positional"`
 	Output   []string `arg:"positional"`
-	Verbose  bool     `arg:"-v" help:"verbosity level"`
+	Verbose  bool     `arg:"-v,--verbose" help:"verbosity level"`
 	Dataset  string   `help:"dataset to use"`
 	Optimize int      `arg:"-O" help:"optimization level"`
 }
@@ -159,6 +169,17 @@ arg.Foo = "abc"
 arg.MustParse(&args)
 ```
 
+### Combining command line options, environment variables, and default values
+
+You can combine command line arguments, environment variables, and default values. Command line arguments take precedence over environment variables, which take precedence over default values. This means that we check whether a certain option was provided on the command line, then if not, we check for an environment variable (only if an `env` tag was provided), then if none is found, we check for a `default` tag containing a default value.
+
+```go
+var args struct {
+    Test  string `arg:"-t,env:TEST" default:"something"`
+}
+arg.MustParse(&args)
+```
+
 ### Arguments with multiple values
 ```go
 var args struct {
@@ -181,6 +202,7 @@ var args struct {
     Files     []string `arg:"-f,separate"`
     Databases []string `arg:"positional"`
 }
+arg.MustParse(&args)
 ```
 
 ```shell
@@ -188,6 +210,20 @@ var args struct {
 Commands: [cmd1 cmd2 cmd3]
 Files [file1 file2 file3]
 Databases [db1 db2 db3]
+```
+
+### Arguments with keys and values
+```go
+var args struct {
+	UserIDs map[string]int
+}
+arg.MustParse(&args)
+fmt.Println(args.UserIDs)
+```
+
+```shell
+./example --userids john=123 mary=456
+map[john:123 mary:456]
 ```
 
 ### Custom validation
@@ -230,6 +266,31 @@ $ ./example --version
 someprogram 4.3.0
 ```
 
+### Overriding option names
+
+```go
+var args struct {
+	Short        string `arg:"-s"`
+	Long         string `arg:"--custom-long-option"`
+	ShortAndLong string `arg:"-x,--my-option"`
+	OnlyShort    string `arg:"-o,--"`
+}
+arg.MustParse(&args)
+```
+
+```shell
+$ ./example --help
+Usage: example [-o ONLYSHORT] [--short SHORT] [--custom-long-option CUSTOM-LONG-OPTION] [--my-option MY-OPTION]
+
+Options:
+  --short SHORT, -s SHORT
+  --custom-long-option CUSTOM-LONG-OPTION
+  --my-option MY-OPTION, -x MY-OPTION
+  -o ONLYSHORT
+  --help, -h             display this help and exit
+```
+
+
 ### Embedded structs
 
 The fields of embedded structs are treated just like regular fields:
@@ -257,6 +318,22 @@ func main() {
 ```
 
 As usual, any field tagged with `arg:"-"` is ignored.
+
+### Supported types
+
+The following types may be used as arguments:
+- built-in integer types: `int, int8, int16, int32, int64, byte, rune`
+- built-in floating point types: `float32, float64`
+- strings
+- booleans
+- URLs represented as `url.URL`
+- time durations represented as `time.Duration`
+- email addresses represented as `mail.Address`
+- MAC addresses represented as `net.HardwareAddr`
+- pointers to any of the above
+- slices of any of the above
+- maps using any of the above as keys and values
+- any type that implements `encoding.TextUnmarshaler`
 
 ### Custom parsing
 
@@ -337,6 +414,8 @@ main.NameDotName{Head:"file", Tail:"txt"}
 
 ### Custom placeholders
 
+*Introduced in version 1.3.0*
+
 Use the `placeholder` tag to control which placeholder text is used in the usage text.
 
 ```go
@@ -392,7 +471,7 @@ Options:
 
 ### Subcommands
 
-*Introduced in `v1.1.0`*
+*Introduced in version 1.1.0*
 
 Subcommands are commonly used in tools that wish to group multiple functions into a single program. An example is the `git` tool:
 ```shell
