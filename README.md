@@ -15,7 +15,7 @@ To watch repositories simply add them to the list of arguments `-r=kubernetes/ku
 ### Deploying
 
 1. Get a URL to send WebHooks to your Slack from https://api.slack.com/incoming-webhooks.
-2. Get a token for scraping GitHub: [https://help.github.com/](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line).
+2. [Get a token](https://github.com/settings/tokens) for scraping GitHub: [https://help.github.com/](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line). For public repositories add the `repo > public_repo` permission.
 
 #### Docker
 

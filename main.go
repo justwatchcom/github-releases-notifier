@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/alexflint/go-arg"
-	"github.com/go-kit/kit/log"
-	"github.com/go-kit/kit/log/level"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/joho/godotenv"
-	githubql "github.com/shurcooL/githubql"
+
+	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
@@ -62,10 +63,11 @@ func main() {
 	}
 
 	tokenSource := oauth2.StaticTokenSource(c.Token())
-	client := oauth2.NewClient(context.Background(), tokenSource)
+	httpClient := oauth2.NewClient(context.Background(), tokenSource)
+
 	checker := &Checker{
 		logger: logger,
-		client: githubql.NewClient(client),
+		client: githubv4.NewClient(httpClient),
 	}
 
 	// TODO: releases := make(chan Repository, len(c.Repositories))

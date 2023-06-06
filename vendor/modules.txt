@@ -1,35 +1,40 @@
-# github.com/alexflint/go-arg v1.3.0
-## explicit
+# github.com/alexflint/go-arg v1.4.3
+## explicit; go 1.13
 github.com/alexflint/go-arg
-# github.com/alexflint/go-scalar v1.0.0
+# github.com/alexflint/go-scalar v1.2.0
+## explicit; go 1.15
 github.com/alexflint/go-scalar
-# github.com/go-kit/kit v0.10.0
-## explicit
-github.com/go-kit/kit/log
-github.com/go-kit/kit/log/level
-# github.com/go-logfmt/logfmt v0.5.0
+# github.com/go-kit/log v0.2.1
+## explicit; go 1.17
+github.com/go-kit/log
+github.com/go-kit/log/level
+# github.com/go-logfmt/logfmt v0.6.0
+## explicit; go 1.17
 github.com/go-logfmt/logfmt
-# github.com/golang/protobuf v1.3.2
+# github.com/golang/protobuf v1.5.3
+## explicit; go 1.9
 github.com/golang/protobuf/proto
-# github.com/joho/godotenv v1.3.0
-## explicit
+# github.com/joho/godotenv v1.5.1
+## explicit; go 1.12
 github.com/joho/godotenv
-# github.com/shurcooL/githubql v0.0.0-20191127044304-8f68eb5628d0
+# github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
 ## explicit
-github.com/shurcooL/githubql
-# github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
+github.com/shurcooL/githubv4
+# github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29
 ## explicit
 github.com/shurcooL/graphql
 github.com/shurcooL/graphql/ident
 github.com/shurcooL/graphql/internal/jsonutil
-# golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
+# golang.org/x/net v0.10.0
+## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
-# golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-## explicit
+# golang.org/x/oauth2 v0.8.0
+## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# google.golang.org/appengine v1.4.0
+# google.golang.org/appengine v1.6.7
+## explicit; go 1.11
 google.golang.org/appengine/internal
 google.golang.org/appengine/internal/base
 google.golang.org/appengine/internal/datastore
@@ -37,3 +42,34 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
+# google.golang.org/protobuf v1.30.0
+## explicit; go 1.11
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genid
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/order
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protodesc
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/descriptorpb
+# gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+## explicit
